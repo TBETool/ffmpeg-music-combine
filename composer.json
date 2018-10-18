@@ -1,0 +1,21 @@
+{
+    "name": "tbetool/ffmpeg-music-combine",
+    "type": "library",
+    "description": "Combine multiple music files using FFMPEG in PHP. Each music file can be combined at specific start position",
+    "keywords": ["ffmpeg", "php ffmpeg", "ffmpeg music combine", "ffmpeg php music combine", "combine mp3", "combine multiple mp3 files", "concatenate mp3 files", "concatenate audio files", "concatenate audio file using ffmpeg", "concatenate audio file using php ffmpeg", "concatenate audio at specific start position", "concate multiple mp3 audio at specific points", "ffmp audio concate", "ffmpeg mp3 concate", "Anuj Sharma", "TBE", "Anuj TBE"],
+    "homepage": "http://thebornengineer.com",
+    "authors": [
+        {
+            "name": "Anuj Sharma",
+            "email": "contact@anujsh.in",
+            "homepage": "https://anujsh.in",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.5"
+    },
+    "autoload": {
+        "psr-4": {"TBETool\\": "src/"}
+    }
+}
