@@ -10,6 +10,7 @@ namespace TBETool;
 
 
 use Exception;
+use getID3;       // https://github.com/JamesHeinrich/getID3
 
 /**
  * Class MusicCombine
@@ -43,7 +44,7 @@ class MusicCombine
      * @return string
      * @throws Exception
      */
-    public function combine($json_data)
+    public function combine($json_data, $change_tempo = false)
     {
         if (!$json_data) {
             throw new Exception('Json data is empty');
@@ -69,7 +70,16 @@ class MusicCombine
          */
         $input = '';
         foreach ($data as $d) {
-            $input .= ' -i ' . $d->path;
+            /**
+             * If change tempo is set to true,
+             */
+            if ($change_tempo) {
+                $file = $this->_changeTempo($d);
+            } else {
+                $file = $d->path;
+            }
+
+            $input .= ' -i ' . $file;
         }
 
         /**
@@ -131,5 +141,39 @@ class MusicCombine
     private function sToMs($seconds)
     {
         return $seconds * 1000;
+    }
+
+    /**
+     *
+     * Change speed of the audio before adding to the input file
+     * the speed of the audio will be in such a way that
+     * it fits between the start and end time specified
+     * for that audio if audio duration is longer than required
+     *
+     * @param $obj
+     */
+    private function _changeTempo($obj)
+    {
+        $getID3 = new getID3;
+        $file = $getID3->analyze($obj->path);
+
+        // Get duration in seconds in float
+        // Ex. 6.3422112332434
+        $duration = $file['playtime_seconds'];
+
+        // Get duration required
+        $duration_required = $obj->end - $obj->start;
+
+        // If audio duration is less than required duration, return original audio
+        if ($duration <= $duration_required) {
+            return $obj->path;
+        }
+
+        // If audio duration is greater than required duration,
+        // Speed up the audio fit the required duration
+        // TODO: Implement audio speed
+
+
+        return $obj->path;
     }
 }
