@@ -14,7 +14,7 @@
     ],
     "require": {
         "php": ">=5.5",
-        "james-heinrich/getid3": "^1.9",
+        "james-heinrich/getid3": "^1.9"
     },
     "autoload": {
         "psr-4": {"TBETool\\": "src/"}
