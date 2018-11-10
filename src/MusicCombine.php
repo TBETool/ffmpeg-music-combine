@@ -168,6 +168,11 @@ class MusicCombine
 
         $file = $getID3->analyze($audio_path);
 
+        // Return 0 (minimum value for audio duration) if playtime_seconds does not exists.
+        if (!key_exists('playtime_seconds', $file)) {
+            return 0;
+        }
+        
         $duration = $file['playtime_seconds'];
 
         return $duration;
