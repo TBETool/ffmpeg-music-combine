@@ -10,6 +10,7 @@ namespace TBETool;
 
 
 use Exception;
+use getID3;
 
 /**
  * Class MusicCombine
