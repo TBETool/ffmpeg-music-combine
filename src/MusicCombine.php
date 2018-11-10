@@ -127,7 +127,7 @@ class MusicCombine
             else
                 throw new Exception('File not generated');
         } else {
-            throw new Exception('Error appending music file: ' . $music_result);
+            throw new Exception('Error appending music file: ' . $script);
         }
     }
 
