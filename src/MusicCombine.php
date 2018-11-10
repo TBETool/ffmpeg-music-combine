@@ -218,12 +218,20 @@ class MusicCombine
             }
 
             if ($number_of_seconds_to_append > 0) {
-                $tempo .= 'atempo='.$number_of_seconds_to_append;
+                if ($number_of_seconds_to_append >= 0.5) {
+                    $tempo .= 'atempo='.$number_of_seconds_to_append;
+                } else {
+                    $tempo .= 'atempo=0.5';
+                }
             } else {
                 $tempo = rtrim($tempo, ',');
             }
         } else {
-            $tempo .= 'atempo='.$speed_required;
+            if ($speed_required < 0.5) {
+                $tempo .= 'atempo=0.5';
+            } else {
+                $tempo .= 'atempo=' . $speed_required;
+            }
         }
 
         return $tempo;
