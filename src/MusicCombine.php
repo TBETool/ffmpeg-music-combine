@@ -10,7 +10,6 @@ namespace TBETool;
 
 
 use Exception;
-use getID3;       // https://github.com/JamesHeinrich/getID3
 
 /**
  * Class MusicCombine
@@ -44,7 +43,7 @@ class MusicCombine
      * @return string
      * @throws Exception
      */
-    public function combine($json_data, $change_tempo = false)
+    public function combine($json_data)
     {
         if (!$json_data) {
             throw new Exception('Json data is empty');
@@ -70,16 +69,7 @@ class MusicCombine
          */
         $input = '';
         foreach ($data as $d) {
-            /**
-             * If change tempo is set to true,
-             */
-            if ($change_tempo) {
-                $file = $this->_changeTempo($d);
-            } else {
-                $file = $d->path;
-            }
-
-            $input .= ' -i ' . $file;
+            $input .= ' -i ' . $d->path;
         }
 
         /**
@@ -89,7 +79,15 @@ class MusicCombine
         $concat_list = '';
         $count = 0;
         foreach ($data as $key => $d) {
-            $f_c .= '['.($key).']adelay='.$this->sToMs($d->start).'|'.$this->sToMs($d->start).'[o'.($key).'];';
+            // Get time gap between start time and end time
+            $time_gap = $this->_getTimeGap($d);
+            // Get duration of the audio file
+            $audio_duration = $this->_getAudioDuration($d->path);
+
+            // Check if audio duration is larger than time gap
+            $audio_speed = $this->_getAudioSpeed($time_gap, $audio_duration);
+
+            $f_c .= '['.($key).']adelay='.$this->sToMs($d->start).'|'.$this->sToMs($d->start).','.$audio_speed.'[o'.($key).'];';
             $concat_list .= '[o'.($key).']';
             $count += 1;
         }
@@ -144,36 +142,89 @@ class MusicCombine
     }
 
     /**
+     * Calculate time gap between the start and end time
      *
-     * Change speed of the audio before adding to the input file
-     * the speed of the audio will be in such a way that
-     * it fits between the start and end time specified
-     * for that audio if audio duration is longer than required
-     *
-     * @param $obj
+     * @param $d
+     * @return mixed
      */
-    private function _changeTempo($obj)
+    private function _getTimeGap($d)
     {
-        $getID3 = new getID3;
-        $file = $getID3->analyze($obj->path);
+        return (float)$d->end - $d->start;
+    }
 
-        // Get duration in seconds in float
-        // Ex. 6.3422112332434
-        $duration = $file['playtime_seconds'];
-
-        // Get duration required
-        $duration_required = $obj->end - $obj->start;
-
-        // If audio duration is less than required duration, return original audio
-        if ($duration <= $duration_required) {
-            return $obj->path;
+    /**
+     * Calculate audio path using ID3 tag reader
+     *
+     * @param $audio_path
+     */
+    private function _getAudioDuration($audio_path)
+    {
+        try {
+            $getID3 = new getID3;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage());
         }
 
-        // If audio duration is greater than required duration,
-        // Speed up the audio fit the required duration
-        // TODO: Implement audio speed
+        $file = $getID3->analyze($audio_path);
 
+        $duration = $file['playtime_seconds'];
 
-        return $obj->path;
+        return $duration;
+    }
+
+    /**
+     * Calculate audio speed to use with ffmpeg to speed the audio file
+     * The speed should be between 0.5 to 2.0 where 0.5 is the 50% slow speed and 2.0 is the double speed
+     *
+     * @param $time_gap time gap in (float)seconds
+     * @param $audio_duration duration of the audio file get from ID3 tag reader in (float) seconds
+     */
+    private function _getAudioSpeed($time_gap, $audio_duration)
+    {
+        if ($time_gap > $audio_duration) {
+            return 'atempo=1.0';
+        }
+
+        $tempo = '';
+
+//        $overdue_gap = $time_gap - $audio_duration;
+
+        /**
+         * Assume if time_gap should be of 10 seconds and audio_duration of 20 seconds
+         * 20/10 will give 2 means the speed needs to be doubled
+         *
+         * If time_gap is 10 seconds and audio_duration of 15 seconds
+         * 15/10 will give 1.5 means the speed needs to be 1.5 of the original speed
+         *
+         * If time_gap is 10 seconds and audio_duration of 25 seconds
+         * 25/10 will give 2.5 means the speed needs to be doubled and then 0.5
+         *
+         * If time_gap is 10 seconds and audio_duration of 35 seconds
+         * 35/10 will give 3.5 means the speed needs to be double and then 1.5
+         *
+         * If time_gap is 10 seconds and audio_duration of 45 seconds
+         * 45/10 will give 4.5 means the speed needs to be double and then double and then 0.5
+         */
+        $speed_required = $audio_duration / $time_gap;
+
+        if ($speed_required > 2) {
+            $number_of_cycles_required = (int)$speed_required/2;
+
+            $number_of_seconds_to_append = $speed_required - ($number_of_cycles_required * 2);
+
+            for ($i = 0; $i < $number_of_cycles_required; $i++) {
+                $tempo .= 'atempo=2.0,';
+            }
+
+            if ($number_of_seconds_to_append > 0) {
+                $tempo .= 'atempo='.$number_of_seconds_to_append;
+            } else {
+                $tempo = rtrim($tempo, ',');
+            }
+        } else {
+            $tempo .= 'atempo='.$speed_required;
+        }
+
+        return $tempo;
     }
 }
