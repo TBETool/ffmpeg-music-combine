@@ -89,7 +89,7 @@ class MusicCombine
             $audio_speed = $this->_getAudioSpeed($time_gap, $audio_duration);
             
             // Calculate delay = original_delay_seconds * audio_speed
-            $delay_seconds = (flaot)$d->start * (float)($audio_speed['tempo_value']);
+            $delay_seconds = floatval($d->start) * floatval($audio_speed['tempo_value']);
 
             $f_c .= '['.($key).']adelay='.$this->sToMs($delay_seconds).'|'.$this->sToMs($delay_seconds).','.$audio_speed['tempo'].'[o'.($key).'];';
             $concat_list .= '[o'.($key).']';
