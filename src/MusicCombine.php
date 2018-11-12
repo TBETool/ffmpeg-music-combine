@@ -223,17 +223,17 @@ class MusicCombine
             }
 
             if ($number_of_seconds_to_append > 0) {
-                if ($number_of_seconds_to_append >= 0.5) {
+                if ($number_of_seconds_to_append >= 1) {
                     $tempo .= 'atempo='.$number_of_seconds_to_append;
                 } else {
-                    $tempo .= 'atempo=0.5';
+                    $tempo .= 'atempo=1.0';
                 }
             } else {
                 $tempo = rtrim($tempo, ',');
             }
         } else {
-            if ($speed_required < 0.5) {
-                $tempo .= 'atempo=0.5';
+            if ($speed_required < 1) {
+                $tempo .= 'atempo=1.0';
             } else {
                 $tempo .= 'atempo=' . $speed_required;
             }
