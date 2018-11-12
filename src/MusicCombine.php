@@ -195,7 +195,12 @@ class MusicCombine
     private function _getAudioSpeed($time_gap, $audio_duration)
     {
         if ($time_gap > $audio_duration) {
-            return 'atempo=1.0';
+            $tempo = 'atempo=1.0';
+            $response = [
+                'tempo' => $tempo,
+                'tempo_value' => 1
+            ];
+            return $response;
         }
 
         $tempo = '';
