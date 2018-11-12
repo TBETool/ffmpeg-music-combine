@@ -119,6 +119,10 @@ class MusicCombine
          */
         $this->music_script = $script;
 
+        echo '*********MUSIC COMBINE SCRIPT::';
+        echo $script;
+        echo '::';
+        
         $music_result = exec($script, $output_command, $return_command);
 
         if ($return_command === 0) {
