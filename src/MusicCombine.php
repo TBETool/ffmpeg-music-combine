@@ -87,8 +87,11 @@ class MusicCombine
 
             // Check if audio duration is larger than time gap
             $audio_speed = $this->_getAudioSpeed($time_gap, $audio_duration);
+            
+            // Calculate delay = original_delay_seconds * audio_speed
+            $delay_seconds = (flaot)$d->start * (float)($audio_speed['tempo_value']);
 
-            $f_c .= '['.($key).']adelay='.$this->sToMs($d->start).'|'.$this->sToMs($d->start).','.$audio_speed.'[o'.($key).'];';
+            $f_c .= '['.($key).']adelay='.$this->sToMs($delay_seconds).'|'.$this->sToMs($delay_seconds).','.$audio_speed['tempo'].'[o'.($key).'];';
             $concat_list .= '[o'.($key).']';
             $count += 1;
         }
@@ -196,6 +199,7 @@ class MusicCombine
         }
 
         $tempo = '';
+        $tempo_value = 1;
 
 //        $overdue_gap = $time_gap - $audio_duration;
 
@@ -224,13 +228,16 @@ class MusicCombine
 
             for ($i = 0; $i < $number_of_cycles_required; $i++) {
                 $tempo .= 'atempo=2.0,';
+                $tempo_value *= 2;
             }
 
             if ($number_of_seconds_to_append > 0) {
                 if ($number_of_seconds_to_append >= 1) {
                     $tempo .= 'atempo='.$number_of_seconds_to_append;
+                    $tempo_value *= $number_of_seconds_to_append;
                 } else {
                     $tempo .= 'atempo=1.0';
+                    $tempo_value *= 1;
                 }
             } else {
                 $tempo = rtrim($tempo, ',');
@@ -238,11 +245,17 @@ class MusicCombine
         } else {
             if ($speed_required < 1) {
                 $tempo .= 'atempo=1.0';
+                $tempo_value *= 1;
             } else {
                 $tempo .= 'atempo=' . $speed_required;
+                $tempo_value *= $speed_required;
             }
         }
 
-        return $tempo;
+        $response = [
+            'tempo' => $tempo,
+            'tempo_value' => $tempo_value
+        ];
+        return $response;
     }
 }
